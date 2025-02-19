@@ -25,7 +25,13 @@ namespace ChallengePolynomius.Repositories
             var authorFilter = new AuthorFilterDTO();
             return await this.GetResultFilter(authorFilter).ProjectTo<AuthorGetDTO>(_mapper.ConfigurationProvider).ToListAsync();
         }
-
+        public async Task<AuthorGetDTO> GetAuthorByIdAsync(int id)
+        {
+            return await _context.Authors
+                .Where(a => a.Id == id)
+                .ProjectTo<AuthorGetDTO>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
+        }
         public async Task<AuthorGetDTO> GetAuthorByFilterAsync(AuthorFilterDTO authorFilter)
         {
             return await this.GetResultFilter(authorFilter).ProjectTo<AuthorGetDTO>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();

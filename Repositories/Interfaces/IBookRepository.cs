@@ -1,13 +1,17 @@
-﻿using ChallengePolynomius.Models;
+﻿using ChallengePolynomius.DTOs;
+using ChallengePolynomius.Models;
+using ChallengePolynomius.Utils;
 
 namespace ChallengePolynomius.Repositories.Interfaces
 {
     public interface IBookRepository
     {
-        Task<IEnumerable<Book>> GetBooksAsync(string? title, int? authorId, int? categoryId, int page, int pageSize);
-        Task<Book?> GetBookByIdAsync(int id);
-        Task AddBookAsync(Book book);
-        Task UpdateBookAsync(Book book);
-        Task DeleteBookAsync(int id);
+        //Task<PagedResult<BookGetDTO>> GetBooksAsync(BookFilterNameDTO filter);
+        Task<IEnumerable<BookGetDTO>> GetBooksList();
+        Task<BookGetDTO> GetBookByFilterAsync(BookFilterDTO bookFilter);
+        Task<BookGetDTO> GetBookByIdAsync(int id);
+        Task<BookGetDTO> AddBookAsync(BookPostDTO book);
+        Task<BookGetDTO> UpdateBookAsync(BookEditDTO book);
+        Task<bool> DeleteBookAsync(int id);
     }
 }

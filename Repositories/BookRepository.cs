@@ -1,6 +1,10 @@
-﻿using ChallengePolynomius.Configurations;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using ChallengePolynomius.Configurations;
+using ChallengePolynomius.DTOs;
 using ChallengePolynomius.Models;
 using ChallengePolynomius.Repositories.Interfaces;
+using ChallengePolynomius.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChallengePolynomius.Repositories
@@ -8,31 +12,135 @@ namespace ChallengePolynomius.Repositories
     public class BookRepository : IBookRepository
     {
         private readonly LibraryContext _context;
-        public BookRepository(LibraryContext context) { _context = context; }
+        private readonly IMapper _mapper;
 
-        public async Task<IEnumerable<Book>> GetBooksAsync(string? title, int? authorId, int? categoryId, int page, int pageSize)
+        public BookRepository(LibraryContext context, IMapper mapper)
         {
-            var query = _context.Books.Include(b => b.Author)
+            _context = context;
+            _mapper = mapper;
+        }
+        public async Task<IEnumerable<BookGetDTO>> GetBooksList()
+        {
+            return await _context.Books
+                .Include(b => b.Author)
                 .Include(b => b.Category)
-                .AsQueryable();
+                .ProjectTo<BookGetDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
+        /*public async Task<PagedResult<BookGetDTO>> GetBooksAsync(BookFilterNameDTO filter)
+        {
+            // Inicia la consulta incluyendo las relaciones con autor y categoría
+            var query = _context.Books.Include(b => b.Author).Include(b => b.Category).AsQueryable();
 
-            if (!string.IsNullOrEmpty(title)) query = query.Where(b => b.Title.Contains(title));
+            // Filtra por ID, si se proporcionó
+            if (filter.Id.HasValue)
+                query = query.Where(b => b.Id == filter.Id.Value);
 
-            if (authorId.HasValue) query = query.Where(b => b.AuthorId == authorId);
+            // Filtra por título, si se proporcionó
+            if (!string.IsNullOrEmpty(filter.Title))
+                query = query.Where(b => b.Title.Contains(filter.Title)); // Filtro por coincidencia parcial en título
 
-            if (categoryId.HasValue) query = query.Where(b => b.CategoryId == categoryId);
+            // Filtra por nombre de autor, si se proporcionó
+            if (!string.IsNullOrEmpty(filter.AuthorName))
+                query = query.Where(b => b.Author.Name.Contains(filter.AuthorName)); // Filtro por coincidencia parcial en nombre del autor
 
-            return await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            // Filtra por nombre de categoría, si se proporcionó
+            if (!string.IsNullOrEmpty(filter.CategoryName))
+                query = query.Where(b => b.Category.Name.Contains(filter.CategoryName)); // Filtro por coincidencia parcial en nombre de la categoría
+
+            // Contabiliza el total de registros que cumplen con los filtros
+            var totalRecords = await query.CountAsync();
+
+            // Aplica la paginación
+            var books = await query
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ProjectTo<BookGetDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            // Retorna el resultado paginado
+            return new PagedResult<BookGetDTO>(books, totalRecords, filter.Page, filter.PageSize);
+        }*/
+
+        public async Task<BookGetDTO> GetBookByFilterAsync(BookFilterDTO bookFilter)
+        {
+            var query = _context.Books.AsQueryable();
+
+            if (bookFilter.Id.HasValue)
+            {
+                query = query.Where(b => b.Id == bookFilter.Id.Value);
+            }
+
+            if (!string.IsNullOrEmpty(bookFilter.Title))
+            {
+                query = query.Where(b => b.Title.Contains(bookFilter.Title));
+            }
+
+            if (bookFilter.AuthorId.HasValue)
+            {
+                query = query.Where(b => b.AuthorId == bookFilter.AuthorId.Value);
+            }
+
+            if (bookFilter.CategoryId.HasValue)
+            {
+                query = query.Where(b => b.CategoryId == bookFilter.CategoryId.Value);
+            }
+
+            var result = await query
+                .Include(b => b.Author)
+                .Include(b => b.Category)
+                .FirstOrDefaultAsync();
+
+            return _mapper.Map<BookGetDTO>(result);
         }
 
-        public async Task<Book?> GetBookByIdAsync(int id) => await _context.Books.FindAsync(id);
-        public async Task AddBookAsync(Book book) { await _context.Books.AddAsync(book); await _context.SaveChangesAsync(); }
-        public async Task UpdateBookAsync(Book book) { _context.Books.Update(book); await _context.SaveChangesAsync(); }
-        public async Task DeleteBookAsync(int id)
+        public async Task<BookGetDTO> GetBookByIdAsync(int id)
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book != null) { _context.Books.Remove(book); await _context.SaveChangesAsync(); }
+            var book = await _context.Books
+                .Include(b => b.Author)
+                .Include(b => b.Category)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            return _mapper.Map<BookGetDTO>(book);
+        }
+
+        public async Task<BookGetDTO> AddBookAsync(BookPostDTO bookPostDTO)
+        {
+            var book = _mapper.Map<Book>(bookPostDTO);
+            await _context.Books.AddAsync(book);
+            await _context.SaveChangesAsync();
+
+            return await GetBookByIdAsync(book.Id);
+        }
+
+        public async Task<BookGetDTO> UpdateBookAsync(BookEditDTO bookEditDTO)
+        {
+            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookEditDTO.Id);
+
+            if (book == null)
+            {
+                throw new Exception("Book not found");
+            }
+
+            _mapper.Map(bookEditDTO, book);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<BookGetDTO>(book);
+        }
+
+        public async Task<bool> DeleteBookAsync(int id)
+        {
+            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
+
+            if (book == null)
+            {
+                throw new Exception("Book not found");
+            }
+
+            _context.Books.Remove(book);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
-
 }

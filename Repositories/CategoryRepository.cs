@@ -1,4 +1,7 @@
-﻿using ChallengePolynomius.Configurations;
+﻿using AutoMapper.QueryableExtensions;
+using AutoMapper;
+using ChallengePolynomius.Configurations;
+using ChallengePolynomius.DTOs;
 using ChallengePolynomius.Models;
 using ChallengePolynomius.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -8,38 +11,85 @@ namespace ChallengePolynomius.Repositories
     public class CategoryRepository: ICategoryRepository
     {
         private readonly LibraryContext _context;
-        public CategoryRepository(LibraryContext context) { _context = context; }
+        private readonly IMapper _mapper;
 
-        public async Task<IEnumerable<Category>> GetCategoriesAsync()
+        public CategoryRepository(LibraryContext context, IMapper mapper)
         {
-            return await _context.Categories.ToListAsync();
+            _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<Category?> GetCategoryByIdAsync(int id)
+        public async Task<IEnumerable<CategoryGetDTO>> GetCategoriesList()
         {
-            return await _context.Categories.FindAsync(id);
+            return await _context.Categories
+                .ProjectTo<CategoryGetDTO>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
 
-        public async Task AddCategoryAsync(Category category)
+        public async Task<CategoryGetDTO> GetCategoryByFilterAsync(CategoryFilterDTO categoryFilter)
         {
+            var query = _context.Categories.AsQueryable();
+
+            if (categoryFilter.Id.HasValue)
+            {
+                query = query.Where(c => c.Id == categoryFilter.Id.Value);
+            }
+
+            if (!string.IsNullOrEmpty(categoryFilter.Name))
+            {
+                query = query.Where(c => c.Name.Contains(categoryFilter.Name));
+            }
+
+            var result = await query.FirstOrDefaultAsync();
+
+            return _mapper.Map<CategoryGetDTO>(result);
+        }
+
+        public async Task<CategoryGetDTO> GetCategoryByIdAsync(int id)
+        {
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            return _mapper.Map<CategoryGetDTO>(category);
+        }
+
+        public async Task<CategoryGetDTO> AddCategoryAsync(CategoryPostDTO categoryPostDTO)
+        {
+            var category = _mapper.Map<Category>(categoryPostDTO);
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
+
+            return await GetCategoryByIdAsync(category.Id);
         }
 
-        public async Task UpdateCategoryAsync(Category category)
+        public async Task<CategoryGetDTO> UpdateCategoryAsync(CategoryEditDTO categoryEditDTO)
         {
-            _context.Categories.Update(category);
-            await _context.SaveChangesAsync();
-        }
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryEditDTO.Id);
 
-        public async Task DeleteCategoryAsync(int id)
-        {
-            var category = await _context.Categories.FindAsync(id);
-            if (category != null)
+            if (category == null)
             {
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
+                throw new Exception("Categoría no encontrada.");
             }
+
+            _mapper.Map(categoryEditDTO, category);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<CategoryGetDTO>(category);
+        }
+
+        public async Task<bool> DeleteCategoryAsync(int id)
+        {
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
+            {
+                throw new Exception("Categoría no encontrada.");
+            }
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

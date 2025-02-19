@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ChallengePolynomius.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20250218202642_MigrationPostgresInitial")]
+    [Migration("20250219092302_MigrationPostgresInitial")]
     partial class MigrationPostgresInitial
     {
         /// <inheritdoc />

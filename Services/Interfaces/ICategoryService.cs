@@ -1,13 +1,15 @@
-﻿using ChallengePolynomius.Models;
+﻿using ChallengePolynomius.DTOs;
+using ChallengePolynomius.Models;
 
 namespace ChallengePolynomius.Services.Interfaces
 {
     public interface ICategoryService
     {
-        Task<IEnumerable<Category>> GetCategoriesAsync();
-        Task<Category?> GetCategoryByIdAsync(int id);
-        Task AddCategoryAsync(Category category);
-        Task UpdateCategoryAsync(Category category);
-        Task DeleteCategoryAsync(int id);
+        Task<IEnumerable<CategoryGetDTO>> GetCategoriesList();
+        Task<CategoryGetDTO> GetCategoryByIdAsync(int id);
+        Task<CategoryGetDTO> GetCategoryByFilterAsync(CategoryFilterDTO categoryFilter);
+        Task<CategoryGetDTO> AddCategoryAsync(CategoryPostDTO category);
+        Task<CategoryGetDTO> UpdateCategoryAsync(CategoryEditDTO category);
+        Task<bool> DeleteCategoryAsync(int id);
     }
 }

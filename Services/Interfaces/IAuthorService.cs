@@ -6,6 +6,7 @@ namespace ChallengePolynomius.Services.Interfaces
     public interface IAuthorService
     {
         Task<IEnumerable<AuthorGetDTO>> GetAuthorsList();
+        Task<AuthorGetDTO> GetAuthorByIdAsync(int id);
         Task<AuthorGetDTO> GetAuthorByFilterAsync(AuthorFilterDTO authorFilterDTO);
         Task<AuthorGetDTO> AddAuthorAsync(AuthorPostDTO author);
         Task<AuthorGetDTO> UpdateAuthorAsync(AuthorEditDTO author);

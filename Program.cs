@@ -51,14 +51,19 @@ app.UseRewriter(new RewriteOptions()
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-app.UseSwaggerUI();
+    app.UseSwaggerUI();
 }
 
-//app.UseSwagger();
-//app.UseSwaggerUI();
+// Llama al inicializador de la base de datos
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<LibraryContext>();
+    //Inserta datos iniciales en la base de datos
+    DbInitializer.Seed(dbContext);
+}
+
 
 app.UseHttpsRedirection();
-
 
 app.UseCors("AllowAll");
 

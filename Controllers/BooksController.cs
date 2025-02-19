@@ -1,52 +1,70 @@
-﻿using ChallengePolynomius.Models;
+﻿using ChallengePolynomius.DTOs;
 using ChallengePolynomius.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChallengePolynomius.Controllers
 {
-    
     [ApiController]
     [Route("api/books")]
     public class BooksController : ControllerBase
     {
-        private readonly IBookService _service;
-        public BooksController(IBookService service) { _service = service; }
+        private readonly IBookService _bookService;
+
+        public BooksController(IBookService bookService)
+        {
+            _bookService = bookService;
+        }
+
+        // Obtener lista de libros con filtros
+        /*[HttpGet]
+        public async Task<IActionResult> GetBooks([FromQuery] BookFilterNameDTO filter)
+        {
+            var books = await _bookService.GetBooksAsync(filter);
+            return Ok(books);
+        }*/
 
         [HttpGet]
-        public async Task<IActionResult> GetBooks([FromQuery] string? title, [FromQuery] int? authorId, [FromQuery] int? categoryId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetBooks()
         {
-            var books = await _service.GetBooksAsync(title, authorId, categoryId, page, pageSize);
-            return Ok(books);
+            var books = await _bookService.GetBooksList();
+            return books.Any() ? Ok(books) : NoContent();
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBook(int id)
+        public async Task<IActionResult> GetBookById(int id)
         {
-            var book = await _service.GetBookByIdAsync(id);
-            return book == null ? NotFound() : Ok(book);
+            var book = await _bookService.GetBookByIdAsync(id);
+            return book == null ? NotFound("Libro no encontrado") : Ok(book);
+        }
+
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetBookByFilter([FromQuery] BookFilterDTO bookFilter)
+        {
+            var book = await _bookService.GetBookByFilterAsync(bookFilter);
+            return book == null ? NotFound("Libro no encontrado") : Ok(book);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddBook([FromBody] Book book)
+        public async Task<IActionResult> AddBook([FromBody] BookPostDTO bookPostDTO)
         {
-            await _service.AddBookAsync(book);
-            return CreatedAtAction(nameof(GetBook), new { id = book.Id }, book);
+            var result = await _bookService.AddBookAsync(bookPostDTO);
+            return CreatedAtAction(nameof(GetBookById), new { id = result.Id }, result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBook(int id, [FromBody] Book book)
+        public async Task<IActionResult> UpdateBook(int id, [FromBody] BookEditDTO bookEditDTO)
         {
-            if (id != book.Id) return BadRequest();
-            await _service.UpdateBookAsync(book);
-            return NoContent();
+            if (id != bookEditDTO.Id) return BadRequest("El ID del libro no coincide con el del cuerpo de la solicitud");
+
+            var result = await _bookService.UpdateBookAsync(bookEditDTO);
+            return result != null ? Ok(result) : NotFound("Libro no encontrado");
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
-            await _service.DeleteBookAsync(id);
-            return NoContent();
+            var success = await _bookService.DeleteBookAsync(id);
+            return success ? NoContent() : NotFound("Libro no encontrado");
         }
     }
-    
 }

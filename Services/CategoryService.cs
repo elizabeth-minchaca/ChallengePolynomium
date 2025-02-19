@@ -1,4 +1,6 @@
-﻿using ChallengePolynomius.Configurations;
+﻿using AutoMapper;
+using ChallengePolynomius.Configurations;
+using ChallengePolynomius.DTOs;
 using ChallengePolynomius.Models;
 using ChallengePolynomius.Repositories.Interfaces;
 using ChallengePolynomius.Services.Interfaces;
@@ -9,35 +11,42 @@ namespace ChallengePolynomius.Services
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IMapper _mapper;
 
-        public CategoryService(ICategoryRepository _categoryRepository)
+        public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
         {
-            _categoryRepository = _categoryRepository;
+            _categoryRepository = categoryRepository;
+            _mapper = mapper;
         }
 
-        public async Task<IEnumerable<Category>> GetCategoriesAsync()
+        public async Task<IEnumerable<CategoryGetDTO>> GetCategoriesList()
         {
-            return await _categoryRepository.GetCategoriesAsync();
+            return await _categoryRepository.GetCategoriesList();
         }
 
-        public async Task<Category?> GetCategoryByIdAsync(int id)
+        public async Task<CategoryGetDTO> GetCategoryByIdAsync(int id)
         {
             return await _categoryRepository.GetCategoryByIdAsync(id);
         }
 
-        public async Task AddCategoryAsync(Category category)
+        public async Task<CategoryGetDTO> GetCategoryByFilterAsync(CategoryFilterDTO categoryFilter)
         {
-            await _categoryRepository.AddCategoryAsync(category);
+            return await _categoryRepository.GetCategoryByFilterAsync(categoryFilter);
         }
 
-        public async Task UpdateCategoryAsync(Category category)
+        public async Task<CategoryGetDTO> AddCategoryAsync(CategoryPostDTO categoryPostDTO)
         {
-            await _categoryRepository.UpdateCategoryAsync(category);
+            return await _categoryRepository.AddCategoryAsync(categoryPostDTO);
         }
 
-        public async Task DeleteCategoryAsync(int id)
+        public async Task<CategoryGetDTO> UpdateCategoryAsync(CategoryEditDTO categoryEditDTO)
         {
-            await _categoryRepository.DeleteCategoryAsync(id);
+            return await _categoryRepository.UpdateCategoryAsync(categoryEditDTO);
+        }
+
+        public async Task<bool> DeleteCategoryAsync(int id)
+        {
+            return await _categoryRepository.DeleteCategoryAsync(id);
         }
     }
 }

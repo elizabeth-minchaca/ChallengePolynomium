@@ -20,6 +20,10 @@ namespace ChallengePolynomius.Services
         {
             return await _authorRepository.GetAuthorsList();
         }
+        public async Task<AuthorGetDTO> GetAuthorByIdAsync(int id)
+        {
+            return await _authorRepository.GetAuthorByIdAsync(id);
+        }
 
         public async Task<AuthorGetDTO?> GetAuthorByFilterAsync(AuthorFilterDTO authorFilterDTO)
         {
