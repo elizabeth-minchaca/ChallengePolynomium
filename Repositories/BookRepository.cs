@@ -13,7 +13,7 @@ namespace ChallengePolynomius.Repositories
     {
         private readonly LibraryContext _context;
         private readonly IMapper _mapper;
-
+        //Recibe el contexto y el mapper por inyección de dependencias.
         public BookRepository(LibraryContext context, IMapper mapper)
         {
             _context = context;
