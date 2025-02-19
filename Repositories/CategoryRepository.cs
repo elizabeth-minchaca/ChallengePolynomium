@@ -37,13 +37,14 @@ namespace ChallengePolynomius.Repositories
 
             if (!string.IsNullOrEmpty(categoryFilter.Name))
             {
-                query = query.Where(c => c.Name.Contains(categoryFilter.Name));
+                query = query.Where(c => c.Name.ToLower().Contains(categoryFilter.Name.ToLower()));
             }
 
             var result = await query.FirstOrDefaultAsync();
 
             return _mapper.Map<CategoryGetDTO>(result);
         }
+
 
         public async Task<CategoryGetDTO> GetCategoryByIdAsync(int id)
         {

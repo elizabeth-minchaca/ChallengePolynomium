@@ -87,7 +87,7 @@ namespace ChallengePolynomius.Repositories
 
             if (!string.IsNullOrEmpty(authorFilter.Name))
             {
-                query = query.Where(a => a.Name.Contains(authorFilter.Name));
+                query = query.Where(c => c.Name.ToLower().Contains(authorFilter.Name.ToLower()));
             }
 
             return query;

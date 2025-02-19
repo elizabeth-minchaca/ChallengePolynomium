@@ -6,7 +6,7 @@ namespace ChallengePolynomius.Repositories.Interfaces
 {
     public interface IBookRepository
     {
-        //Task<PagedResult<BookGetDTO>> GetBooksAsync(BookFilterNameDTO filter);
+        Task<PagedResult<BookGetDTO>> GetBooksAsync(BookFilterNameDTO filter);
         Task<IEnumerable<BookGetDTO>> GetBooksList();
         Task<BookGetDTO> GetBookByFilterAsync(BookFilterDTO bookFilter);
         Task<BookGetDTO> GetBookByIdAsync(int id);

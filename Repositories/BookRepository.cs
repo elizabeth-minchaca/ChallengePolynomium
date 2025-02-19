@@ -27,7 +27,7 @@ namespace ChallengePolynomius.Repositories
                 .ProjectTo<BookGetDTO>(_mapper.ConfigurationProvider)
                 .ToListAsync();
         }
-        /*public async Task<PagedResult<BookGetDTO>> GetBooksAsync(BookFilterNameDTO filter)
+        public async Task<PagedResult<BookGetDTO>> GetBooksAsync(BookFilterNameDTO filter)
         {
             // Inicia la consulta incluyendo las relaciones con autor y categoría
             var query = _context.Books.Include(b => b.Author).Include(b => b.Category).AsQueryable();
@@ -38,15 +38,15 @@ namespace ChallengePolynomius.Repositories
 
             // Filtra por título, si se proporcionó
             if (!string.IsNullOrEmpty(filter.Title))
-                query = query.Where(b => b.Title.Contains(filter.Title)); // Filtro por coincidencia parcial en título
+                query = query.Where(b => b.Title.ToLower().Contains(filter.Title.ToLower())); // Filtro insensible a mayúsculas y minúsculas
 
             // Filtra por nombre de autor, si se proporcionó
             if (!string.IsNullOrEmpty(filter.AuthorName))
-                query = query.Where(b => b.Author.Name.Contains(filter.AuthorName)); // Filtro por coincidencia parcial en nombre del autor
+                query = query.Where(b => b.Author.Name.ToLower().Contains(filter.AuthorName.ToLower())); // Filtro insensible a mayúsculas y minúsculas
 
             // Filtra por nombre de categoría, si se proporcionó
             if (!string.IsNullOrEmpty(filter.CategoryName))
-                query = query.Where(b => b.Category.Name.Contains(filter.CategoryName)); // Filtro por coincidencia parcial en nombre de la categoría
+                query = query.Where(b => b.Category.Name.ToLower().Contains(filter.CategoryName.ToLower())); // Filtro insensible a mayúsculas y minúsculas
 
             // Contabiliza el total de registros que cumplen con los filtros
             var totalRecords = await query.CountAsync();
@@ -60,7 +60,8 @@ namespace ChallengePolynomius.Repositories
 
             // Retorna el resultado paginado
             return new PagedResult<BookGetDTO>(books, totalRecords, filter.Page, filter.PageSize);
-        }*/
+        }
+
 
         public async Task<BookGetDTO> GetBookByFilterAsync(BookFilterDTO bookFilter)
         {

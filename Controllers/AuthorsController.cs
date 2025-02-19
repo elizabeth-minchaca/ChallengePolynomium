@@ -27,8 +27,8 @@ namespace ChallengePolynomius.Controllers
             return author != null ? Ok(author) : NotFound(new { Message = "Autor no encontrado" });
         }
 
-        [HttpGet("Filter/{id}")]
-        public async Task<IActionResult> GetAuthorByFilterAsync(AuthorFilterDTO authorFilterDTO)
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetAuthorByFilterAsync([FromQuery] AuthorFilterDTO authorFilterDTO)
         {
             var author = await _service.GetAuthorByFilterAsync(authorFilterDTO);
             return author == null ? NotFound("Autor no encontrado") : Ok(author);

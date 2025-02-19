@@ -17,10 +17,10 @@ namespace ChallengePolynomius.Services
             _bookRepository = bookRepository;
             _mapper = mapper;
         }
-        /*public async Task<PagedResult<BookGetDTO>> GetBooksAsync(BookFilterNameDTO filter)
+        public async Task<PagedResult<BookGetDTO>> GetBooksAsync(BookFilterNameDTO filter)
         {
             return await _bookRepository.GetBooksAsync(filter);
-        }*/
+        }
         public async Task<IEnumerable<BookGetDTO>> GetBooksList()
         {
             return await _bookRepository.GetBooksList();
